@@ -229,9 +229,9 @@ def CalcGUIDO():
 ##                icur_field_param_list.append(icur_field)
 
 
-            with arcpy.da.InsertCursor(featVerticesPnts,  [*]) as icur:
+            with arcpy.da.InsertCursor(featVerticesPnts, ['*']) as icur:
                 #use da search cursor to explode to verices and return the geometry
-                with arcpy.da.SearchCursor(self.path, [*]) as cursor:
+                with arcpy.da.SearchCursor(self.path, ['*'], '#', '#', True) as cursor:
                     for row in cursor:
                         #just insert the row minus the oid field, which is the first item.
                         icur.insertRow(row[1:])
@@ -272,50 +272,57 @@ def CalcGUIDO():
         featVerticesPnts = arcpy.CreateUniqueName("featVerticesPnts", setworkspace)
         arcpy.AddMessage(featVerticesPnts)
         try:
-            arcpy.CreateFeatureclass_management(os.path.dirname(featVerticesPnts), os.path.basename(featVerticesPnts), "POINT", "#", "#", "#", self.path)
-            outputFields = arcpy.ListFields(featVerticesPnts)
-            inPolylineRows = arcpy.SearchCursor(self.path)
+            arcpy.CreateFeatureclass_management(os.path.dirname(featVerticesPnts),
+                os.path.basename(featVerticesPnts), "POINT", '#', "#", "#", self.path)
+##            outputFields = arcpy.ListFields(featVerticesPnts)
+##            inPolylineRows = arcpy.SearchCursor(self.path)
             arcpy.AddField_management(featVerticesPnts, featureid, "Text", "", "")
-            outPointRows = arcpy.InsertCursor(featVerticesPnts)
-            for inPolylineRow in inPolylineRows:
-                    inPolyline =  inPolylineRow.getValue(arcpy.Describe(featVerticesPnts).shapeFieldName)
-                    infeatureid = inPolylineRow.getValue(featureid)
-                    partCount = inPolyline.partCount
-                    partNum = 0
-                    while partNum < partCount:
-                            pntArray = inPolyline.getPart(partNum)
-                            pntCount = pntArray.count
-                            pntNum = 0
-                            if first_and_last == "true":
-                                arcpy.AddField_management(featVerticesPnts, "Ordinal", "Text", "", "")
-                                for iPntCount in range(0, pntCount):
-                                    arcpy.AddMessage(str(pntNum) + " " + str(pntCount))
-                                    if pntNum == 0 or pntNum + 1 == pntCount:
-                                        arcpy.AddMessage(pntNum)
-                                        outPointRow = outPointRows.newRow()
-                                        outPointRow.setValue("Shape", pntArray.getObject(pntNum))
-                                        outPointRow.setValue(featureid, infeatureid)
-                                        if pntNum == 0:
-                                            outPointRow.setValue("Ordinal", "Start")
-                                        elif pntNum + 1 == pntCount:
-                                            outPointRow.setValue("Ordinal", "End")
-    ##                                    for field in outputFields:
-    ##                                            if field.type <> "Geometry" and field.type <> "OID":
-    ##                                                    outPointRow.setValue(field.name, inPolylineRow.getValue(field.name))
-                                        outPointRows.insertRow(outPointRow)
-                                    pntNum = pntNum + 1
-                            else:
-                                while pntNum < pntCount:
-                                    outPointRow = outPointRows.newRow()
-                                    outPointRow.setValue("Shape", pntArray.getObject(pntNum))
-                                    outPointRow.setValue(featureid, infeatureid)
-##                                    for field in outputFields:
-##                                            if field.type <> "Geometry" and field.type <> "OID":
-##                                                    outPointRow.setValue(field.name, inPolylineRow.getValue(field.name))
-
-                                    outPointRows.insertRow(outPointRow)
-                                    pntNum = pntNum + 1
-                            partNum = partNum + 1
+##            outPointRows = arcpy.InsertCursor(featVerticesPnts)
+            #da cursor in with statement
+            with arcpy.da.InsertCursor(featVerticesPnts, ['SHAPE@xy','featureid']) as outPointRows:
+##                flds = outPointRows.fields
+                with arcpy.da.SearchCursor(self.path, ['SHAPE@xy','featureid'], '#', '#', True) as inPolylineRows:
+                    for inPolylineRow in inPolylineRows:
+                        #just insert the row minus the oid field, which is the first item.
+                        icur.insertRow(row)
+##                        inPolyline =  inPolylineRow.getValue(arcpy.Describe(featVerticesPnts).shapeFieldName)
+##                        infeatureid = inPolylineRow.getValue(featureid)
+##                        partCount = inPolyline.partCount
+##                        partNum = 0
+##                        while partNum < partCount:
+##                                pntArray = inPolyline.getPart(partNum)
+##                                pntCount = pntArray.count
+##                                pntNum = 0
+##                                if first_and_last == "true":
+##                                    arcpy.AddField_management(featVerticesPnts, "Ordinal", "Text", "", "")
+##                                    for iPntCount in range(0, pntCount):
+##                                        arcpy.AddMessage(str(pntNum) + " " + str(pntCount))
+##                                        if pntNum == 0 or pntNum + 1 == pntCount:
+##                                            arcpy.AddMessage(pntNum)
+##                                            outPointRow = outPointRows.newRow()
+##                                            outPointRow.setValue("Shape", pntArray.getObject(pntNum))
+##                                            outPointRow.setValue(featureid, infeatureid)
+##                                            if pntNum == 0:
+##                                                outPointRow.setValue("Ordinal", "Start")
+##                                            elif pntNum + 1 == pntCount:
+##                                                outPointRow.setValue("Ordinal", "End")
+##        ##                                    for field in outputFields:
+##        ##                                            if field.type <> "Geometry" and field.type <> "OID":
+##        ##                                                    outPointRow.setValue(field.name, inPolylineRow.getValue(field.name))
+##                                            outPointRows.insertRow(outPointRow)
+##                                        pntNum = pntNum + 1
+##                                else:
+##                                    while pntNum < pntCount:
+##                                        outPointRow = outPointRows.newRow()
+##                                        outPointRow.setValue("Shape", pntArray.getObject(pntNum))
+##                                        outPointRow.setValue(featureid, infeatureid)
+##    ##                                    for field in outputFields:
+##    ##                                            if field.type <> "Geometry" and field.type <> "OID":
+##    ##                                                    outPointRow.setValue(field.name, inPolylineRow.getValue(field.name))
+##
+##                                        outPointRows.insertRow(outPointRow)
+##                                        pntNum = pntNum + 1
+##                                partNum = partNum + 1
         except:
             arcpy.AddMessage(traceback.format_exc())
         return featVerticesPnts
