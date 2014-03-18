@@ -223,32 +223,37 @@ def CalcGUIDO():
         featVerticesPnts = arcpy.CreateUniqueName("featVerticesPnts", setworkspace)
         try:
             arcpy.CreateFeatureclass_management(os.path.dirname(featVerticesPnts), os.path.basename(featVerticesPnts), "POINT", self.path, "#", "#", self.path)
-            cursor_list = list(featureLayer.cursor_to_dicts(self))#check out the comments on cursor_to_dicts
-            icur_field_param_list = []
-            for icur_field in cursor_list[0].keys():
-                icur_field_param_list.append(icur_field)
+##            cursor_list = list(featureLayer.cursor_to_dicts(self))#check out the comments on cursor_to_dicts
+##            icur_field_param_list = []
+##            for icur_field in cursor_list[0].keys():
+##                icur_field_param_list.append(icur_field)
 
 
-            with arcpy.da.InsertCursor(featVerticesPnts,  icur_field_param_list) as icur:
-                for feature_row_dicts in cursor_list:
-                    shapes_dicts = feature_row_dicts["SHAPE@"]
-                    for coords_tup in shapes_dicts["coordinates"]:
-                        for coords in coords_tup:
-                            coords_list = str(coords)[1:-1].split(",")
-                            insert_param_list = []
-                            insert_point = arcpy.Point()
-                            insert_point.X = coords_list[0]
-                            insert_point.Y = coords_list[1]
-                            pointGeom = arcpy.PointGeometry(insert_point)
-                            for insert_value_key in icur_field_param_list:
-                                if insert_value_key == self.shapefieldname:
-                                    insert_param_list.append(coords)
-                                elif insert_value_key == "SHAPE@":
-                                    insert_param_list.append(pointGeom)
-                                else:
-                                    insert_param_list.append(feature_row_dicts[insert_value_key])
-                            arcpy.AddMessage(insert_param_list)
-                            icur.insertRow(insert_param_list)
+            with arcpy.da.InsertCursor(featVerticesPnts, ['*']) as icur:
+                #use da search cursor to explode to verices and return the geometry
+                with arcpy.da.SearchCursor(self.path, ['*']) as cursor:
+                    for row in cursor:
+                        #just insert the row minus the oid field, which is the first item.
+                        icur.insertRow(row[1:])
+##                for feature_row_dicts in cursor_list:
+##                    shapes_dicts = feature_row_dicts["SHAPE@"]
+##                    for coords_tup in shapes_dicts["coordinates"]:
+##                        for coords in coords_tup:
+##                            coords_list = str(coords)[1:-1].split(",")
+##                            insert_param_list = []
+##                            insert_point = arcpy.Point()
+##                            insert_point.X = coords_list[0]
+##                            insert_point.Y = coords_list[1]
+##                            pointGeom = arcpy.PointGeometry(insert_point)
+##                            for insert_value_key in icur_field_param_list:
+##                                if insert_value_key == self.shapefieldname:
+##                                    insert_param_list.append(coords)
+##                                elif insert_value_key == "SHAPE@":
+##                                    insert_param_list.append(pointGeom)
+##                                else:
+##                                    insert_param_list.append(feature_row_dicts[insert_value_key])
+##                            arcpy.AddMessage(insert_param_list)
+##                            icur.insertRow(insert_param_list)
 
 
         except:
