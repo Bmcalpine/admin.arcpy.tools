@@ -335,12 +335,12 @@ def make_table_querylist_unique(fc, field):
         arcMessage("No field called: " + field + ".  function makeQueryListUnique is breaking.")
         return
     queryList=[]
-    scur=arcpy.da.SearchCursor(fc, str(field))
-    for row in scur:
-        val = row[0]
-        if val not in queryList:
-            queryList.append(val)
-    return queryList
+    with arcpy.da.SearchCursor(fc, str(field)) as scur:
+        for row in scur:
+##            val = row[0]
+##            if val not in queryList:
+            queryList.append(row[0])
+        return queryList
 
 
 
@@ -424,29 +424,4 @@ class ESRI_FolderBrowser(object):
             for f in filelist:
                     featureclasslist.append(f)
         return featureclasslist
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

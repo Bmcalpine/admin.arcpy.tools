@@ -284,7 +284,7 @@ def CalcGUIDO():
                 with arcpy.da.SearchCursor(self.path, ['SHAPE@xy','featureid'], '#', '#', True) as inPolylineRows:
                     for inPolylineRow in inPolylineRows:
                         #just insert the row minus the oid field, which is the first item.
-                        icur.insertRow(row)
+                        outPointRows.insertRow(inPolylineRow)
 ##                        inPolyline =  inPolylineRow.getValue(arcpy.Describe(featVerticesPnts).shapeFieldName)
 ##                        infeatureid = inPolylineRow.getValue(featureid)
 ##                        partCount = inPolyline.partCount
@@ -335,12 +335,12 @@ def make_table_querylist_unique(fc, field):
         arcMessage("No field called: " + field + ".  function makeQueryListUnique is breaking.")
         return
     queryList=[]
-    scur=arcpy.da.SearchCursor(fc, str(field))
-    for row in scur:
-        val = row[0]
-        if val not in queryList:
-            queryList.append(val)
-    return queryList
+    with arcpy.da.SearchCursor(fc, str(field)) as scur:
+        for row in scur:
+##            val = row[0]
+##            if val not in queryList:
+            queryList.append(row[0])
+        return queryList
 
 
 
