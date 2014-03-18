@@ -139,7 +139,7 @@ def CalcGUIDO():
         #used string format and triple quotes to be shorter
         sql = flddel + """ = '{}'""".format(value)
         arcpy.MakeFeatureLayer_management(self.path, featLyr, sql)
-        return featLyr
+        return  featLyr
 
     def create_route(self, measlinename, routefield, coordpriority=None):
         '''This should only be used for simple lines'''
