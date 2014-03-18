@@ -121,12 +121,15 @@ def CalcGUIDO():
             arcMessage("No field called: " + field + ".  function makeQueryListUnique is breaking.")
             return
         queryList=[]
-        scur=arcpy.SearchCursor(self.path)
-        for row in scur:
-            val = row.getValue(field)
-            if val not in queryList:
-                queryList.append(val)
-        return queryList
+        #using new da cursors
+        with arcpy.da.SearchCursor(self.path,field) as scur:
+            for row in scur:
+                queryList.append(row[0])
+            #use set to get a unique list of items, just need to call it once.
+            queryset = set(queryList)
+            #make it a list again, in case a set will not work fro your needs
+            queryList = list(queryset)
+            return queryList
 
     def makeSQLFeatureLayer(self, field, value):
         featLyr = arcpy.CreateUniqueName("featLyr", "in_memory")

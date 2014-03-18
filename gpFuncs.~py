@@ -95,7 +95,6 @@ class featureLayer(object):
         desc = arcpy.Describe(self.path)
         if desc.hasOID == 1:
             oidField = desc.OIDFieldName
-            #scur = arcpy.SearchCursor(self.path)
             #use new da cursor and with block as they are much faster and
             #the with block make sure everything is cleaned up
             #also using the oid@ token to just return the oid data
@@ -122,12 +121,13 @@ def CalcGUIDO():
             arcMessage("No field called: " + field + ".  function makeQueryListUnique is breaking.")
             return
         queryList=[]
-        scur=arcpy.SearchCursor(self.path)
-        for row in scur:
-            val = row.getValue(field)
-            if val not in queryList:
-                queryList.append(val)
-        return queryList
+        #using new da cursors
+        with arcpy.da.SearchCursor(self.path,field) as scur:
+            for row in scur:
+                queryList.append(row[0])
+            #use set to get a unique list of items, just need to call it once.
+            queryset = set(queryList)
+            return queryList = list(queryset)
 
     def makeSQLFeatureLayer(self, field, value):
         featLyr = arcpy.CreateUniqueName("featLyr", "in_memory")
