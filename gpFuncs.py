@@ -137,7 +137,7 @@ def CalcGUIDO():
         #fgdb,mdb,sde.
         flddel = arcpy.AddFieldDelimiters(self.path, field)
         #used string format and triple quotes to be shorter
-        sql = flddel + """ = '{}'""".format(value)
+        sql = flddel + """ = '{0!s}'""".format(value)
         arcpy.MakeFeatureLayer_management(self.path, featLyr, sql)
         return  featLyr
 

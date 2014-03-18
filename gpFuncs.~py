@@ -172,16 +172,17 @@ def CalcGUIDO():
         is iterated through it will be empty
         '''
         fieldlist_with_shapetoken = featureLayer.cursor_field_parameter_helper(self, "SHAPE@")
-        cursor = arcpy.da.SearchCursor(self.path, fieldlist_with_shapetoken)
-        for row in cursor:
-            row_dict = {}
-            for field in fieldlist_with_shapetoken:
-                if field == "SHAPE@":
-                    val = row[featureLayer.get_field_index(self, field, fieldlist_with_shapetoken)]
-                else:
-                    val = row[featureLayer.get_field_index(self, field)]
-                row_dict[field] = getattr(val, '__geo_interface__', val)
-            yield row_dict
+        #Using with block
+        with arcpy.da.SearchCursor(self.path, fieldlist_with_shapetoken) as cursor:
+            for row in cursor:
+                row_dict = {}
+                for field in fieldlist_with_shapetoken:
+                    if field == "SHAPE@":
+                        val = row[featureLayer.get_field_index(self, field, fieldlist_with_shapetoken)]
+                    else:
+                        val = row[featureLayer.get_field_index(self, field)]
+                    row_dict[field] = getattr(val, '__geo_interface__', val)
+                yield row_dict
 
 
     def cursor_field_parameter_helper(self, special_cursor_token=None):
