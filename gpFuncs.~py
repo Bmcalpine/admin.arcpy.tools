@@ -127,7 +127,9 @@ def CalcGUIDO():
                 queryList.append(row[0])
             #use set to get a unique list of items, just need to call it once.
             queryset = set(queryList)
-            return queryList = list(queryset)
+            #make it a list again, in case a set will not work fro your needs
+            queryList = list(queryset)
+            return queryList
 
     def makeSQLFeatureLayer(self, field, value):
         featLyr = arcpy.CreateUniqueName("featLyr", "in_memory")

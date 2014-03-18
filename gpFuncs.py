@@ -133,7 +133,11 @@ def CalcGUIDO():
 
     def makeSQLFeatureLayer(self, field, value):
         featLyr = arcpy.CreateUniqueName("featLyr", "in_memory")
-        sql = '"' + field + '"' + " = " + "'" + value + "'"
+        #add proper field delimeterl for sql no matter what type of data shp,sde,
+        #fgdb,mdb,sde.
+        flddel = arcpy.AddFieldDelimiters(self.path, field)
+        #used string format and triple quotes to be shorter
+        sql = flddel + """ = '{}'""".format(value)
         arcpy.MakeFeatureLayer_management(self.path, featLyr, sql)
         return featLyr
 
