@@ -95,6 +95,7 @@ class featureLayer(object):
         desc = arcpy.Describe(self.path)
         if desc.hasOID == 1:
             oidField = desc.OIDFieldName
+            #scur = arcpy.SearchCursor(self.path)
             #use new da cursor and with block as they are much faster and
             #the with block make sure everything is cleaned up
             #also using the oid@ token to just return the oid data
